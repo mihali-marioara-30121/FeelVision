@@ -33,16 +33,11 @@ import java.nio.channels.FileChannel;
 public class FacialExpressionRecognition {
     private final Interpreter interpreter;
     private final int INPUT_SIZE;
-    private int height = 0;
-    private int width = 0;
-    private final GpuDelegate gpuDelegate;
+    private CascadeClassifier cascadeClassifier; // used for face detection
 
-    // cascadeClassifier -> used for face detection
-    private CascadeClassifier cascadeClassifier;
-
-    FacialExpressionRecognition(AssetManager assetManager, Context context, String modelPath, int inputSize) throws IOException {
+    public FacialExpressionRecognition(AssetManager assetManager, Context context, String modelPath, int inputSize) throws IOException {
         INPUT_SIZE = inputSize;
-        gpuDelegate = new GpuDelegate();
+        GpuDelegate gpuDelegate = new GpuDelegate();
 
         Interpreter.Options options = new Interpreter.Options();
         options.addDelegate(gpuDelegate);
@@ -93,13 +88,12 @@ public class FacialExpressionRecognition {
         Mat grayscaleImage = new Mat();
         Imgproc.cvtColor(mat_image,grayscaleImage, Imgproc.COLOR_RGBA2GRAY);
 
-        height = grayscaleImage.height();
-        width = grayscaleImage.width();
+        int height = grayscaleImage.height();
 
         // define minimum height of face in original image
         // below this size no face in original image will show
         int absoluteFaceSize = (int)(height * 0.1);
-        // now create MatofRect to store face (Matrix of rectangle)
+        // now create MatOfRect to store face (Matrix of rectangle)
         MatOfRect faces = new MatOfRect();
         // check if cascadeClassifier is loaded or not
         if(cascadeClassifier !=null){
@@ -138,87 +132,74 @@ public class FacialExpressionRecognition {
             // if emotion is recognize print value of it
 
             // define float value of emotion
-            float emotion_v = (float) Array.get(Array.get(emotion,0),0);
-            Log.d("facial_expression","Output:  "+ emotion_v);
+            float emotionValue = (float) Array.get(Array.get(emotion,0),0);
+            Log.d("facial_expression","Output:  "+ emotionValue);
             // create a function that return text emotion
-            String emotion_s = get_emotion_text(emotion_v);
+            String emotion_s = findEmotionByValue(emotionValue);
             // now put text on original frame(mat_image)
             //             input/output    text: Angry (2.934234)
-            Imgproc.putText(mat_image,emotion_s+" ("+emotion_v+")",
+            Imgproc.putText(mat_image,emotion_s+" ("+emotionValue+")",
                     new Point((int)faceArray[i].tl().x+10,(int)faceArray[i].tl().y+20),
                     1,1.5,new Scalar(0,0,255,150),2);
             //      use to scale text      color     R G  B  alpha    thickness
-
-            // select device and run
-            // Everything is working fine
-            // Remember to try other model
-            // If you want me to improve model comment below
-            // This model had average accuracy it can be improve
-            // Bye
-
         }
 
-        // after prediction
-        // rotate mat_image -90 degree
+        // rotate mat_image -90 degree after prediction
         Core.flip(mat_image.t(), mat_image,0);
         return mat_image;
     }
 
-    private String get_emotion_text(float emotion_v) {
-        // create an empty string
-        String val="";
-        // use if statement to determine val
-        // You can change starting value and ending value to get better result
-        // Like
+    private String findEmotionByValue(float emotionValue) {
 
-        if(emotion_v>=0 & emotion_v<0.5){
-            val="Surprise";
+        if(emotionValue >= 0 && emotionValue < 0.5){
+            return "Surprise";
         }
-        else if(emotion_v>=0.5 & emotion_v <1.5){
-            val="Fear";
+
+        if(emotionValue >= 0.5 && emotionValue < 1.5){
+            return "Fear";
         }
-        else if(emotion_v>=1.5 & emotion_v <2.5){
-            val="Angry";
+
+        if(emotionValue >= 1.5 && emotionValue < 2.5){
+            return "Angry";
         }
-        else if(emotion_v>=2.5 & emotion_v <3.5){
-            val="Neutral";
+
+        if(emotionValue >= 2.5 && emotionValue < 3.5){
+            return "Neutral";
         }
-        else if(emotion_v>=3.5 & emotion_v <4.5){
-            val="Sad";
+
+        if(emotionValue >= 3.5 && emotionValue < 4.5){
+            return "Sad";
         }
-        else if(emotion_v>=4.5 & emotion_v <5.5){
-            val="Disgust";
+
+        if(emotionValue >= 4.5 && emotionValue < 5.5){
+            return "Disgust";
         }
-        else {
-            val="Happy";
-        }
-        return val;
+
+        return "Happy";
     }
 
     private ByteBuffer convertBitmapToByteBuffer(Bitmap scaledBitmap) {
         ByteBuffer byteBuffer;
-        int size_image=INPUT_SIZE;//48
+        int size_image = INPUT_SIZE;
 
-        byteBuffer=ByteBuffer.allocateDirect(4*1*size_image*size_image*3);
+        byteBuffer = ByteBuffer.allocateDirect(4 * size_image * size_image * 3);
         // 4 is multiplied for float input
         // 3 is multiplied for rgb
         byteBuffer.order(ByteOrder.nativeOrder());
         int[] intValues=new int[size_image*size_image];
         scaledBitmap.getPixels(intValues,0,scaledBitmap.getWidth(),0,0,scaledBitmap.getWidth(),scaledBitmap.getHeight());
-        int pixel=0;
-        for(int i =0;i<size_image;++i){
-            for(int j=0;j<size_image;++j){
-                final int val=intValues[pixel++];
+        int pixel = 0;
+        for(int i = 0; i < size_image; ++i){
+            for(int j = 0; j < size_image; ++j){
+                final int val = intValues[pixel++];
                 // now put float value to bytebuffer
                 // scale image to convert image from 0-255 to 0-1
                 byteBuffer.putFloat((((val>>16)&0xFF))/255.0f);
                 byteBuffer.putFloat((((val>>8)&0xFF))/255.0f);
                 byteBuffer.putFloat(((val & 0xFF))/255.0f);
-
             }
         }
         return byteBuffer;
-        // check one more time it is important else you will get error
     }
 
 
@@ -226,14 +207,11 @@ public class FacialExpressionRecognition {
         // this will give description of file
         AssetFileDescriptor assetFileDescriptor=assetManager.openFd(modelPath);
         // create a inputsteam to read file
-        FileInputStream inputStream=new FileInputStream(assetFileDescriptor.getFileDescriptor());
-        FileChannel fileChannel=inputStream.getChannel();
+        FileInputStream inputStream = new FileInputStream(assetFileDescriptor.getFileDescriptor());
+        FileChannel fileChannel = inputStream.getChannel();
 
-        long startOffset=assetFileDescriptor.getStartOffset();
-        long declaredLength=assetFileDescriptor.getDeclaredLength();
+        long startOffset = assetFileDescriptor.getStartOffset();
+        long declaredLength = assetFileDescriptor.getDeclaredLength();
         return  fileChannel.map(FileChannel.MapMode.READ_ONLY,startOffset,declaredLength);
-
     }
-
-
 }
