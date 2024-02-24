@@ -31,141 +31,117 @@ import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 
 public class FacialExpressionRecognition {
-    // define interpreter
-    // Before this implement tensorflow to build.gradle file
-    private Interpreter interpreter;
-    // define input size
-    private int INPUT_SIZE;
-    // define height and width of original frame
-    private int height=0;
-    private int width=0;
-    // now define Gpudelegate
-    // it is use to implement gpu in interpreter
-    private GpuDelegate gpuDelegate=null;
+    private final Interpreter interpreter;
+    private final int INPUT_SIZE;
+    private int height = 0;
+    private int width = 0;
+    private final GpuDelegate gpuDelegate;
 
-    // now define cascadeClassifier for face detection
+    // cascadeClassifier -> used for face detection
     private CascadeClassifier cascadeClassifier;
-    // now call this in CameraActivity
+
     FacialExpressionRecognition(AssetManager assetManager, Context context, String modelPath, int inputSize) throws IOException {
-        INPUT_SIZE=inputSize;
-        // set GPU for the interpreter
-        Interpreter.Options options=new Interpreter.Options();
-        gpuDelegate=new GpuDelegate();
-        // add gpuDelegate to option
+        INPUT_SIZE = inputSize;
+        gpuDelegate = new GpuDelegate();
+
+        Interpreter.Options options = new Interpreter.Options();
         options.addDelegate(gpuDelegate);
-        // now set number of threads to options
         options.setNumThreads(4); // set this according to your phone
         // this will load model weight to interpreter
-        interpreter=new Interpreter(loadModelFile(assetManager,modelPath),options);
-        // if model is load print
+        interpreter = new Interpreter(loadModelFile(assetManager,modelPath),options);
+
         Log.d("facial_Expression","Model is loaded");
 
-        // now we will load haarcascade classifier
+        // load haar cascade classifier
         try {
             // define input stream to read classifier
-            InputStream is=context.getResources().openRawResource(R.raw.haarcascade_frontalface_alt);
+            InputStream inputStream = context.getResources().openRawResource(R.raw.haarcascade_frontalface_alt);
             // create a folder
-            File cascadeDir=context.getDir("cascade",Context.MODE_PRIVATE);
+            File cascadeDir = context.getDir("cascade",Context.MODE_PRIVATE);
             // now create a new file in that folder
-            File mCascadeFile=new File(cascadeDir,"haarcascade_frontalface_alt");
+            File cascadeFile = new File(cascadeDir,"haarcascade_frontalface_alt");
             // now define output stream to transfer data to file we created
-            FileOutputStream os=new FileOutputStream(mCascadeFile);
+            FileOutputStream outputStream = new FileOutputStream(cascadeFile);
             // now create buffer to store byte
-            byte[] buffer=new byte[4096];
+            byte[] buffer = new byte[4096];
             int byteRead;
-            // read byte in while loop
+            // read bytes in while loop
             // when it read -1 that means no data to read
-            while ((byteRead=is.read(buffer)) !=-1){
+            while ((byteRead = inputStream.read(buffer)) != -1){
                 // writing on mCascade file
-                os.write(buffer,0,byteRead);
-
+                outputStream.write(buffer,0, byteRead);
             }
+
             // close input and output stream
-            is.close();
-            os.close();
-            cascadeClassifier=new CascadeClassifier(mCascadeFile.getAbsolutePath());
+            inputStream.close();
+            outputStream.close();
+
+            cascadeClassifier = new CascadeClassifier(cascadeFile.getAbsolutePath());
             // if cascade file is loaded print
             Log.d("facial_Expression","Classifier is loaded");
-            // check your code one more time
-            // select device and run
-            //I/MainActivity: OpenCv Is loaded
-            //D/facial_Expression: Model is loaded
-            //D/facial_Expression: Classifier is loaded
-            // Next video we will predict face in frame.
             // cropped frame is then pass through interpreter which will return facial expression/emotion
-
         }
         catch (IOException e){
             e.printStackTrace();
         }
-
     }
-    // Before watching this video please watch my previous video :
-    //Facial Expression Or Emotion Recognition Android App Using TFLite (GPU) and OpenCV:Load Model Part 2
-    // Let's start
-    // Create a new function
-    // input and output are in Mat format
-    // call this in onCameraframe of CameraActivity
+
     public Mat recognizeImage(Mat mat_image){
-        // before predicting
-        // our image is not properly align
-        // we have to rotate it by 90 degree for proper prediction
-        Core.flip(mat_image.t(),mat_image,1);// rotate mat_image by 90 degree
-        // start with our process
+        // rotate image by 90 degree before predicting
+        Core.flip(mat_image.t(),mat_image,1);
         // convert mat_image to gray scale image
-        Mat grayscaleImage=new Mat();
-        Imgproc.cvtColor(mat_image,grayscaleImage,Imgproc.COLOR_RGBA2GRAY);
-        // set height and width
-        height=grayscaleImage.height();
-        width=grayscaleImage.width();
+        Mat grayscaleImage = new Mat();
+        Imgproc.cvtColor(mat_image,grayscaleImage, Imgproc.COLOR_RGBA2GRAY);
+
+        height = grayscaleImage.height();
+        width = grayscaleImage.width();
 
         // define minimum height of face in original image
         // below this size no face in original image will show
-        int absoluteFaceSize=(int)(height*0.1);
-        // now create MatofRect to store face
-        MatOfRect faces=new MatOfRect();
+        int absoluteFaceSize = (int)(height * 0.1);
+        // now create MatofRect to store face (Matrix of rectangle)
+        MatOfRect faces = new MatOfRect();
         // check if cascadeClassifier is loaded or not
         if(cascadeClassifier !=null){
             // detect face in frame
-            //                                  input         output
-            cascadeClassifier.detectMultiScale(grayscaleImage,faces,1.1,2,2,
-                    new Size(absoluteFaceSize,absoluteFaceSize),new Size());
+            cascadeClassifier.detectMultiScale(grayscaleImage, faces,1.1,2,2,
+                    new Size(absoluteFaceSize, absoluteFaceSize), new Size());
                     // minimum size
         }
 
         // now convert it to array
-        Rect[] faceArray=faces.toArray();
+        Rect[] faceArray = faces.toArray();
         // loop through each face
-        for (int i=0;i<faceArray.length;i++){
+        for (int i=0; i<faceArray.length; i++){
             // if you want to draw rectangle around face
             //                input/output starting point ending point        color   R  G  B  alpha    thickness
             Imgproc.rectangle(mat_image,faceArray[i].tl(),faceArray[i].br(),new Scalar(0,255,0,255),2);
             // now crop face from original frame and grayscaleImage
                         // starting x coordinate       starting y coordinate
-            Rect roi=new Rect((int)faceArray[i].tl().x,(int)faceArray[i].tl().y,
+            Rect roi = new Rect((int)faceArray[i].tl().x,(int)faceArray[i].tl().y,
                     ((int)faceArray[i].br().x)-(int)(faceArray[i].tl().x),
                     ((int)faceArray[i].br().y)-(int)(faceArray[i].tl().y));
-            // it's very important check one more time
-            Mat cropped_rgba=new Mat(mat_image,roi);//
+
+            Mat cropped_rgba = new Mat(mat_image,roi);
             // now convert cropped_rgba to bitmap
-            Bitmap bitmap=null;
-            bitmap=Bitmap.createBitmap(cropped_rgba.cols(),cropped_rgba.rows(),Bitmap.Config.ARGB_8888);
-            Utils.matToBitmap(cropped_rgba,bitmap);
+            Bitmap bitmap;
+            bitmap=Bitmap.createBitmap(cropped_rgba.cols(), cropped_rgba.rows(), Bitmap.Config.ARGB_8888);
+            Utils.matToBitmap(cropped_rgba, bitmap);
             // resize bitmap to (48,48)
-            Bitmap scaledBitmap=Bitmap.createScaledBitmap(bitmap,48,48,false);
+            Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap,48,48,false);
             // now convert scaledBitmap to byteBuffer
-            ByteBuffer byteBuffer=convertBitmapToByteBuffer(scaledBitmap);
+            ByteBuffer byteBuffer = convertBitmapToByteBuffer(scaledBitmap);
             // now create an object to hold output
-            float[][] emotion=new float[1][1];
+            float[][] emotion = new float[1][1];
             //now predict with bytebuffer as an input and emotion as an output
-            interpreter.run(byteBuffer,emotion);
+            interpreter.run(byteBuffer, emotion);
             // if emotion is recognize print value of it
 
             // define float value of emotion
-            float emotion_v=(float)Array.get(Array.get(emotion,0),0);
+            float emotion_v = (float) Array.get(Array.get(emotion,0),0);
             Log.d("facial_expression","Output:  "+ emotion_v);
             // create a function that return text emotion
-            String emotion_s=get_emotion_text(emotion_v);
+            String emotion_s = get_emotion_text(emotion_v);
             // now put text on original frame(mat_image)
             //             input/output    text: Angry (2.934234)
             Imgproc.putText(mat_image,emotion_s+" ("+emotion_v+")",
@@ -184,7 +160,7 @@ public class FacialExpressionRecognition {
 
         // after prediction
         // rotate mat_image -90 degree
-        Core.flip(mat_image.t(),mat_image,0);
+        Core.flip(mat_image.t(), mat_image,0);
         return mat_image;
     }
 
