@@ -22,7 +22,7 @@ import org.opencv.core.Mat;
 import java.io.IOException;
 
 public class CameraActivity extends Activity implements CameraBridgeViewBase.CvCameraViewListener2{
-    private static final String TAG="MainActivity";
+    private static final String TAG = "MainActivity";
 
     private Mat mRgba;
     private Mat mGray;
@@ -30,19 +30,16 @@ public class CameraActivity extends Activity implements CameraBridgeViewBase.CvC
     // call java class
     private FacialExpressionRecognition facialExpressionRecognition;
 
-    private BaseLoaderCallback mLoaderCallback =new BaseLoaderCallback(this) {
+    private final BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
         @Override
         public void onManagerConnected(int status) {
-            switch (status){
-                case LoaderCallbackInterface
-                        .SUCCESS:{
+            switch (status) {
+                case LoaderCallbackInterface.SUCCESS: {
                     Log.i(TAG,"OpenCv Is loaded");
                     mOpenCvCameraView.enableView();
                 }
-                default:
-                {
+                default: {
                     super.onManagerConnected(status);
-
                 }
                 break;
             }
@@ -50,7 +47,7 @@ public class CameraActivity extends Activity implements CameraBridgeViewBase.CvC
     };
 
     public CameraActivity(){
-        Log.i(TAG,"Instantiated new "+this.getClass());
+        Log.i(TAG,"Instantiated new " + this.getClass());
     }
 
     @Override
@@ -82,8 +79,6 @@ public class CameraActivity extends Activity implements CameraBridgeViewBase.CvC
         catch (IOException e){
             e.printStackTrace();
         }
-
-
     }
 
     @Override
@@ -111,26 +106,25 @@ public class CameraActivity extends Activity implements CameraBridgeViewBase.CvC
 
     public void onDestroy(){
         super.onDestroy();
-        if(mOpenCvCameraView !=null){
+
+        if (mOpenCvCameraView != null){
             mOpenCvCameraView.disableView();
         }
-
     }
 
     public void onCameraViewStarted(int width ,int height){
-        mRgba=new Mat(height,width, CvType.CV_8UC4);
-        mGray =new Mat(height,width,CvType.CV_8UC1);
+        mRgba = new Mat(height,width, CvType.CV_8UC4);
+        mGray = new Mat(height,width,CvType.CV_8UC1);
     }
     public void onCameraViewStopped(){
         mRgba.release();
     }
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame){
-        mRgba=inputFrame.rgba();
-        mGray=inputFrame.gray();
-        //output                                         input
-        mRgba=facialExpressionRecognition.recognizeImage(mRgba);
-        return mRgba;
+        mRgba = inputFrame.rgba();
+        mGray = inputFrame.gray();
 
+        mRgba = facialExpressionRecognition.recognizeImage(mRgba);
+        return mRgba;
     }
 
 }
