@@ -43,7 +43,7 @@ public class FacialExpressionRecognition {
         options.addDelegate(gpuDelegate);
         options.setNumThreads(4); // set this according to your phone
         // this will load model weight to interpreter
-        interpreter = new Interpreter(loadModelFile(assetManager,modelPath),options);
+        interpreter = new Interpreter(loadModelFile(assetManager, modelPath), options);
 
         Log.d("facial_Expression","Model is loaded");
 
@@ -92,11 +92,11 @@ public class FacialExpressionRecognition {
 
         // define minimum height of face in original image
         // below this size no face in original image will show
-        int absoluteFaceSize = (int)(height * 0.1);
+        int absoluteFaceSize = (int) (height * 0.1);
         // now create MatOfRect to store face (Matrix of rectangle)
         MatOfRect faces = new MatOfRect();
         // check if cascadeClassifier is loaded or not
-        if(cascadeClassifier !=null){
+        if(cascadeClassifier != null){
             // detect face in frame
             cascadeClassifier.detectMultiScale(grayscaleImage, faces,1.1,2,2,
                     new Size(absoluteFaceSize, absoluteFaceSize), new Size());
