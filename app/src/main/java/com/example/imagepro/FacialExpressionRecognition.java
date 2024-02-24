@@ -182,8 +182,6 @@ public class FacialExpressionRecognition {
 
         }
 
-
-
         // after prediction
         // rotate mat_image -90 degree
         Core.flip(mat_image.t(),mat_image,0);
