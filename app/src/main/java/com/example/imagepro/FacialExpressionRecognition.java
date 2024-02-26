@@ -104,17 +104,18 @@ public class FacialExpressionRecognition {
         }
 
         // now convert it to array
-        Rect[] faceArray = faces.toArray();
+        Rect[] faceArray = faces.toArray(); // Array of rectangles
         // loop through each face
         for (int i=0; i<faceArray.length; i++){
             // if you want to draw rectangle around face
             //                input/output starting point ending point        color   R  G  B  alpha    thickness
             Imgproc.rectangle(mat_image,faceArray[i].tl(),faceArray[i].br(),new Scalar(0,255,0,255),2);
             // now crop face from original frame and grayscaleImage
+            // roi = region of interest
                         // starting x coordinate       starting y coordinate
             Rect roi = new Rect((int)faceArray[i].tl().x,(int)faceArray[i].tl().y,
-                    ((int)faceArray[i].br().x)-(int)(faceArray[i].tl().x),
-                    ((int)faceArray[i].br().y)-(int)(faceArray[i].tl().y));
+                    ((int)faceArray[i].br().x)-(int)(faceArray[i].tl().x), //width  of the roi
+                    ((int)faceArray[i].br().y)-(int)(faceArray[i].tl().y)); //height of the roi
 
             Mat cropped_rgba = new Mat(mat_image,roi);
             // now convert cropped_rgba to bitmap
@@ -194,9 +195,9 @@ public class FacialExpressionRecognition {
                 final int val = intValues[pixel++];
                 // now put float value to bytebuffer
                 // scale image to convert image from 0-255 to 0-1
-                byteBuffer.putFloat((((val>>16)&0xFF))/255.0f);
-                byteBuffer.putFloat((((val>>8)&0xFF))/255.0f);
-                byteBuffer.putFloat(((val & 0xFF))/255.0f);
+                byteBuffer.putFloat((((val>>16)&0xFF))/255.0f); //extracts the red value
+                byteBuffer.putFloat((((val>>8)&0xFF))/255.0f); //extracts the green value
+                byteBuffer.putFloat(((val & 0xFF))/255.0f); //extracts the blue value
             }
         }
         return byteBuffer;
@@ -205,7 +206,7 @@ public class FacialExpressionRecognition {
 
     private MappedByteBuffer loadModelFile(AssetManager assetManager, String modelPath) throws IOException{
         // this will give description of file
-        AssetFileDescriptor assetFileDescriptor=assetManager.openFd(modelPath);
+        AssetFileDescriptor assetFileDescriptor = assetManager.openFd(modelPath);
         // create a inputsteam to read file
         FileInputStream inputStream = new FileInputStream(assetFileDescriptor.getFileDescriptor());
         FileChannel fileChannel = inputStream.getChannel();
