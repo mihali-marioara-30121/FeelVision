@@ -126,8 +126,10 @@ public class FacialExpressionRecognition {
             Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap,48,48,false);
             // now convert scaledBitmap to byteBuffer
             ByteBuffer byteBuffer = convertBitmapToByteBuffer(scaledBitmap);
+            int numClasses = 7;
             // now create an object to hold output
-            float[][] emotion = new float[1][1];
+            //float[][] emotion = new float[1][1];
+            float[][] emotion = new float[1][numClasses];
             //now predict with bytebuffer as an input and emotion as an output
             interpreter.run(byteBuffer, emotion);
             // if emotion is recognize print value of it
@@ -136,7 +138,8 @@ public class FacialExpressionRecognition {
             float emotionValue = (float) Array.get(Array.get(emotion,0),0);
             Log.d("facial_expression","Output:  "+ emotionValue);
             // create a function that return text emotion
-            String emotion_s = findEmotionByValue(emotionValue);
+            //String emotion_s = findEmotionByValue(emotionValue);
+            String emotion_s = getEmotion(emotion);
             // now put text on original frame(mat_image)
             //             input/output    text: Angry (2.934234)
             Imgproc.putText(mat_image,emotion_s+" ("+emotionValue+")",
@@ -148,6 +151,42 @@ public class FacialExpressionRecognition {
         // rotate mat_image -90 degree after prediction
         Core.flip(mat_image.t(), mat_image,0);
         return mat_image;
+    }
+    private int argmax(float[] array) {
+        int maxIndex = 0;
+        for (int i = 1; i < array.length; i++) {
+            if (array[i] > array[maxIndex]) {
+                maxIndex = i;
+            }
+        }
+        return maxIndex;
+    }
+    public String getEmotion(float[][] emotion){
+        String emotion_s = "";
+        switch (argmax(emotion[0])) {
+            case 0:
+                emotion_s = "Angry";
+                break;
+            case 1:
+                emotion_s = "Disgust";
+                break;
+            case 2:
+                emotion_s = "Fear";
+                break;
+            case 3:
+                emotion_s = "Happy";
+                break;
+            case 4:
+                emotion_s = "Sad";
+                break;
+            case 5:
+                emotion_s = "Surprise";
+                break;
+            case 6:
+                emotion_s = "Neutral";
+                break;
+        }
+        return emotion_s;
     }
 
     private String findEmotionByValue(float emotionValue) {
