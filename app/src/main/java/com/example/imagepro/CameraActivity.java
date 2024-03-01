@@ -9,13 +9,16 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.SurfaceView;
+import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.ImageView;
 
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
+import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 
@@ -26,6 +29,9 @@ public class CameraActivity extends Activity implements CameraBridgeViewBase.CvC
     private Mat mRgba;
     private Mat mGray;
     private CameraBridgeViewBase mOpenCvCameraView;
+    private ImageView flip_camera;
+    //define integer that represent camera 0-back 1-front
+    private int mCameraId = 0; //initially the back camera is open
     private FacialExpressionRecognition facialExpressionRecognition;
 
     private final BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
@@ -57,6 +63,14 @@ public class CameraActivity extends Activity implements CameraBridgeViewBase.CvC
         mOpenCvCameraView = findViewById(R.id.frame_Surface);
         mOpenCvCameraView.setVisibility(SurfaceView.VISIBLE);
         mOpenCvCameraView.setCvCameraViewListener(this);
+
+        flip_camera = findViewById(R.id.flip_camera);
+        flip_camera.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                swapCamera();
+            }
+        });
         // this will load cascade classifier and model
         // this only happen one time when you start CameraActivity
         try{
@@ -69,6 +83,13 @@ public class CameraActivity extends Activity implements CameraBridgeViewBase.CvC
             e.printStackTrace();
         }
     }
+
+   private void swapCamera(){
+        mCameraId = mCameraId^1; //basic not operation
+       mOpenCvCameraView.disableView();
+       mOpenCvCameraView.setCameraIndex(mCameraId);
+       mOpenCvCameraView.enableView();
+   }
 
     @Override
     protected void onResume() {
@@ -112,7 +133,15 @@ public class CameraActivity extends Activity implements CameraBridgeViewBase.CvC
         mRgba = inputFrame.rgba();
         mGray = inputFrame.gray();
 
+        if(mCameraId == 1){
+            Core.flip(mRgba, mRgba, 1); //rotate by 180
+        }
+
         mRgba = facialExpressionRecognition.recognizeImage(mRgba);
+        //front camera is rotated by 180
+        // when mCameraId = 1 (front)
+
+
         return mRgba;
     }
 

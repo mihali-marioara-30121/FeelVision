@@ -9,4 +9,21 @@
         android:layout_height="match_parent"
         android:id="@+id/frame_Surface"/>
 
+  <LinearLayout
+      android:layout_width="match_parent"
+      android:layout_height="100dp"
+      android:background="@color/white"
+      android:layout_gravity="bottom"
+      android:gravity = "center_horizontal"
+      android:orientation="horizontal">
+
+      <!-- 1 dp = 2 pixels-->
+          <ImageView
+              android:layout_width="40dp"
+              android:layout_height="40dp"
+              android:id="@+id/flip_camera"
+              android:src="@drawable/flip_camera"
+              android:layout_marginTop="30dp" ></ImageView>
+
+  </LinearLayout>
 </FrameLayout>
