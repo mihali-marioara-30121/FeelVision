@@ -128,7 +128,6 @@ public class FacialExpressionRecognition {
             ByteBuffer byteBuffer = convertBitmapToByteBuffer(scaledBitmap);
             int numClasses = 7;
             // now create an object to hold output
-            //float[][] emotion = new float[1][1];
             float[][] emotion = new float[1][numClasses];
             //now predict with bytebuffer as an input and emotion as an output
             interpreter.run(byteBuffer, emotion);
@@ -187,35 +186,6 @@ public class FacialExpressionRecognition {
                 break;
         }
         return emotion_s;
-    }
-
-    private String findEmotionByValue(float emotionValue) {
-
-        if(emotionValue >= 0 && emotionValue < 0.5){
-            return "Surprise";
-        }
-
-        if(emotionValue >= 0.5 && emotionValue < 1.5){
-            return "Fear";
-        }
-
-        if(emotionValue >= 1.5 && emotionValue < 2.5){
-            return "Angry";
-        }
-
-        if(emotionValue >= 2.5 && emotionValue < 3.5){
-            return "Neutral";
-        }
-
-        if(emotionValue >= 3.5 && emotionValue < 4.5){
-            return "Sad";
-        }
-
-        if(emotionValue >= 4.5 && emotionValue < 5.5){
-            return "Disgust";
-        }
-
-        return "Happy";
     }
 
     private ByteBuffer convertBitmapToByteBuffer(Bitmap scaledBitmap) {
