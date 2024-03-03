@@ -73,7 +73,7 @@ public class CameraActivity extends Activity implements CameraBridgeViewBase.CvC
         });
         // this will load cascade classifier and model
         // this only happen one time when you start CameraActivity
-        try{
+        try {
             int INPUT_SIZE = 48;
             String modelFileName = "kaggle_model.tflite";
             facialExpressionRecognition = new FacialExpressionRecognition(getAssets(),CameraActivity.this,
