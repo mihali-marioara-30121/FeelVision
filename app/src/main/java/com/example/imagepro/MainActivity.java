@@ -7,7 +7,6 @@ import androidx.core.content.ContextCompat;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.speech.RecognitionListener;
@@ -15,9 +14,7 @@ import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
 import android.speech.tts.TextToSpeech;
 import android.util.Log;
-import android.view.View;
 import android.widget.Button;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import org.opencv.android.OpenCVLoader;
@@ -30,8 +27,6 @@ public class MainActivity extends AppCompatActivity {
 
     private TextToSpeech textToSpeech;
     private SpeechRecognizer speechRecognizer;
-    private View rootView;
-    private TextView textView;
 
     static {
         if(OpenCVLoader.initDebug()){
@@ -47,8 +42,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Button camera_button = findViewById(R.id.camera_button);
-        rootView = getWindow().getDecorView().getRootView(); // Store the root view
-        textView = findViewById(R.id.text_view);
 
         checkAudioPermissions();
         camera_button.setOnClickListener(v -> openCameraActivity());
@@ -66,7 +59,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void startListening(View view) {
+    private void startListening() {
         Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
                 RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
@@ -82,19 +75,17 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initializeSpeechRecognizer() {
-        // Initialize SpeechRecognizer
         speechRecognizer = SpeechRecognizer.createSpeechRecognizer(this);
         speechRecognizer.setRecognitionListener(new SpeechRecognitionListener());
     }
 
     private void processResult(String command) {
-        textView.setText(command);
         command = command.toLowerCase();
         if (command.contains("start")){
             openCameraActivity();
             speak("CameraActivity is open!");
         } else {
-            startListening(rootView);
+            startListening();
         }
         // Display the recognized command in a Toast message
         Toast.makeText(MainActivity.this, "Recognized Command: " + command, Toast.LENGTH_SHORT).show();
@@ -115,7 +106,7 @@ public class MainActivity extends AppCompatActivity {
                     new Handler().postDelayed(new Runnable() {
                         @Override
                         public void run() {
-                            startListening(rootView);
+                            startListening();
                         }
                     }, 4000);
                 }
