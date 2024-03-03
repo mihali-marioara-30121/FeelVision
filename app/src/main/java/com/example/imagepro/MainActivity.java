@@ -1,7 +1,5 @@
 package com.example.imagepro;
 
-import static android.Manifest.permission.RECORD_AUDIO;
-
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -52,6 +50,13 @@ public class MainActivity extends AppCompatActivity {
         rootView = getWindow().getDecorView().getRootView(); // Store the root view
         textView = findViewById(R.id.text_view);
 
+        checkAudioPermissions();
+        camera_button.setOnClickListener(v -> openCameraActivity());
+        initializeTextToSpeech();
+        initializeSpeechRecognizer();
+    }
+
+    private void checkAudioPermissions() {
         int MY_PERMISSIONS_REQUEST_RECORD_AUDIO = 0;
         // Check if the record audio permission is not granted
         if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.RECORD_AUDIO)
@@ -59,22 +64,6 @@ public class MainActivity extends AppCompatActivity {
             // Request the record audio permission
             ActivityCompat.requestPermissions(MainActivity.this, new String[] {Manifest.permission.RECORD_AUDIO}, MY_PERMISSIONS_REQUEST_RECORD_AUDIO);
         }
-
-        camera_button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                openCameraActivity();
-            }
-        });
-
-        initializeTextToSpeech();
-        initializeSpeechRecognizer();
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        // Start speech recognition when the activity is resumed
     }
 
     private void startListening(View view) {
@@ -128,18 +117,14 @@ public class MainActivity extends AppCompatActivity {
                         public void run() {
                             startListening(rootView);
                         }
-                    }, 6000);
+                    }, 4000);
                 }
             }
         });
     }
 
     private void speak(String message) {
-        if(Build.VERSION.SDK_INT >= 21){
-           textToSpeech.speak(message, TextToSpeech.QUEUE_FLUSH, null, null);
-        } else {
-           textToSpeech.speak(message, TextToSpeech.QUEUE_FLUSH, null);
-        }
+        textToSpeech.speak(message, TextToSpeech.QUEUE_FLUSH, null, null);
     }
     @Override
     protected void onDestroy() {
