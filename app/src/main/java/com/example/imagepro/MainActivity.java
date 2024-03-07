@@ -14,7 +14,10 @@ import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
 import android.speech.tts.TextToSpeech;
 import android.util.Log;
+import android.view.MotionEvent;
+import android.view.View;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import org.opencv.android.OpenCVLoader;
@@ -28,6 +31,9 @@ public class MainActivity extends AppCompatActivity {
     private TextToSpeech textToSpeech;
     private SpeechRecognizer speechRecognizer;
 
+    private LinearLayout parentLinearLayout;
+    private String keeper = "";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -40,13 +46,14 @@ public class MainActivity extends AppCompatActivity {
             (Toast.makeText(this, "OpenCV initialization failed!", Toast.LENGTH_LONG)).show();
             return;
         }
-
+        parentLinearLayout = findViewById(R.id.parent_layout);
         Button camera_button = findViewById(R.id.camera_button);
 
         checkAudioPermissions();
         camera_button.setOnClickListener(v -> openCameraActivity());
         initializeTextToSpeech();
         initializeSpeechRecognizer();
+        setupSpeechRecognitionOnTouchListener();
     }
 
     private void checkAudioPermissions() {
@@ -71,12 +78,6 @@ public class MainActivity extends AppCompatActivity {
                 } else{
                     textToSpeech.setLanguage(Locale.ENGLISH);
                     speak("Hello! I am ready. Say START to open Camera!");
-                    new Handler().postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            startListening();
-                        }
-                    }, 4000);
                 }
             }
         });
@@ -135,6 +136,25 @@ public class MainActivity extends AppCompatActivity {
 
     private void speak(String message) {
         textToSpeech.speak(message, TextToSpeech.QUEUE_FLUSH, null, null);
+    }
+
+    public void setupSpeechRecognitionOnTouchListener() {
+        parentLinearLayout.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                switch (event.getAction()){
+                    case MotionEvent.ACTION_DOWN:
+                        startListening();
+                        keeper = "";
+                        break;
+
+                    case MotionEvent.ACTION_UP:
+                        speechRecognizer.stopListening();
+                        break;
+                }
+                return true;
+            }
+        });
     }
 
     private void openCameraActivity() {
