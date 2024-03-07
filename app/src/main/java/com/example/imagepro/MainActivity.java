@@ -32,7 +32,6 @@ public class MainActivity extends AppCompatActivity {
     private SpeechRecognizer speechRecognizer;
 
     private LinearLayout parentLinearLayout;
-    private String keeper = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -124,11 +123,9 @@ public class MainActivity extends AppCompatActivity {
 
     private void processResult(String command) {
         command = command.toLowerCase();
-        if (command.contains("start")){
+        if (command.contains("start")) {
             openCameraActivity();
-            speak("CameraActivity is open!");
-        } else {
-            startListening();
+            //speak("CameraActivity is open!");
         }
         // Display the recognized command in a Toast message
         Toast.makeText(MainActivity.this, "Recognized Command: " + command, Toast.LENGTH_SHORT).show();
@@ -145,7 +142,6 @@ public class MainActivity extends AppCompatActivity {
                 switch (event.getAction()){
                     case MotionEvent.ACTION_DOWN:
                         startListening();
-                        keeper = "";
                         break;
 
                     case MotionEvent.ACTION_UP:
