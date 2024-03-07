@@ -28,19 +28,19 @@ public class MainActivity extends AppCompatActivity {
     private TextToSpeech textToSpeech;
     private SpeechRecognizer speechRecognizer;
 
-    static {
-        if(OpenCVLoader.initDebug()){
-            Log.d("MainActivity: ","Opencv is loaded");
-        }
-        else {
-            Log.d("MainActivity: ","Opencv failed to load");
-        }
-    }
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        if (OpenCVLoader.initDebug()) {
+            Log.i("LOADED", "OpenCV loaded successfully");
+        } else {
+            Log.e("LOADED", "OpenCV initialization failed!");
+            (Toast.makeText(this, "OpenCV initialization failed!", Toast.LENGTH_LONG)).show();
+            return;
+        }
+
         Button camera_button = findViewById(R.id.camera_button);
 
         checkAudioPermissions();
@@ -59,38 +59,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void startListening() {
-        Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
-        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
-                RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
-        intent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 1);
-        speechRecognizer.startListening(intent);
-    }
-
-    private void openCameraActivity() {
-        Intent intent = new Intent(MainActivity.this, CameraActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        startActivity(intent);
-    }
-
-    private void initializeSpeechRecognizer() {
-        speechRecognizer = SpeechRecognizer.createSpeechRecognizer(this);
-        speechRecognizer.setRecognitionListener(new SpeechRecognitionListener());
-    }
-
-    private void processResult(String command) {
-        command = command.toLowerCase();
-        if (command.contains("start")){
-            openCameraActivity();
-            speak("CameraActivity is open!");
-        } else {
-            startListening();
-        }
-        // Display the recognized command in a Toast message
-        Toast.makeText(MainActivity.this, "Recognized Command: " + command, Toast.LENGTH_SHORT).show();
-    }
-
     private void initializeTextToSpeech() {
         textToSpeech = new TextToSpeech(this, new TextToSpeech.OnInitListener(){
 
@@ -98,7 +66,7 @@ public class MainActivity extends AppCompatActivity {
             public void onInit(int i) {
                 if(textToSpeech.getEngines().size() == 0){ // no engine are installed
                     Toast.makeText(MainActivity.this, "There is no TextToSpeech engine on your device!",
-                             Toast.LENGTH_LONG).show();
+                            Toast.LENGTH_LONG).show();
                     finish();
                 } else{
                     textToSpeech.setLanguage(Locale.ENGLISH);
@@ -114,32 +82,24 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void speak(String message) {
-        textToSpeech.speak(message, TextToSpeech.QUEUE_FLUSH, null, null);
-    }
-    @Override
-    protected void onDestroy() {
-        if (speechRecognizer != null) {
-            speechRecognizer.destroy();
-        }
-        if (textToSpeech != null) {
-            textToSpeech.stop();
-            textToSpeech.shutdown();
-        }
-        super.onDestroy();
+    private void initializeSpeechRecognizer() {
+        speechRecognizer = SpeechRecognizer.createSpeechRecognizer(this);
+        speechRecognizer.setRecognitionListener(new SpeechRecognitionListener());
     }
 
-    @Override
-    protected void onPause() {
-        super.onPause();
-        textToSpeech.shutdown();
+    private void startListening() {
+        Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
+                RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+        intent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 1);
+        speechRecognizer.startListening(intent);
     }
 
     private class SpeechRecognitionListener implements RecognitionListener {
         @Override
         public void onResults(Bundle results) {
             ArrayList<String> matches = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
-                processResult( matches.get(0));
+            processResult( matches.get(0));
         }
 
         // Implement other required methods with empty bodies
@@ -159,5 +119,41 @@ public class MainActivity extends AppCompatActivity {
         public void onPartialResults(Bundle partialResults) {}
         @Override
         public void onEvent(int eventType, Bundle params) {}
+    }
+
+    private void processResult(String command) {
+        command = command.toLowerCase();
+        if (command.contains("start")){
+            openCameraActivity();
+            speak("CameraActivity is open!");
+        } else {
+            startListening();
+        }
+        // Display the recognized command in a Toast message
+        Toast.makeText(MainActivity.this, "Recognized Command: " + command, Toast.LENGTH_SHORT).show();
+    }
+
+    private void speak(String message) {
+        textToSpeech.speak(message, TextToSpeech.QUEUE_FLUSH, null, null);
+    }
+
+    private void openCameraActivity() {
+        Intent intent = new Intent(MainActivity.this, CameraActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivity(intent);
+    }
+
+
+    @Override
+    protected void onDestroy() {
+        if (speechRecognizer != null) {
+            speechRecognizer.destroy();
+        }
+        if (textToSpeech != null) {
+            textToSpeech.stop();
+            textToSpeech.shutdown();
+        }
+        super.onDestroy();
     }
 }
