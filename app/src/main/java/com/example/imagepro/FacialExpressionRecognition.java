@@ -109,7 +109,7 @@ public class FacialExpressionRecognition {
         for (int i=0; i<faceArray.length; i++){
             // if you want to draw rectangle around face
             //                input/output starting point ending point        color   R  G  B  alpha    thickness
-            Imgproc.rectangle(mat_image,faceArray[i].tl(),faceArray[i].br(),new Scalar(0,255,0,255),2);
+            Imgproc.rectangle(mat_image,faceArray[i].tl(),faceArray[i].br(),new Scalar(0,255,0,255),4);
             // now crop face from original frame and grayscaleImage
             // roi = region of interest
                         // starting x coordinate       starting y coordinate
@@ -141,9 +141,14 @@ public class FacialExpressionRecognition {
             String emotion_s = getEmotion(emotion);
             // now put text on original frame(mat_image)
             //             input/output    text: Angry (2.934234)
-            Imgproc.putText(mat_image,emotion_s+" ("+emotionValue+")",
-                    new Point((int)faceArray[i].tl().x+10,(int)faceArray[i].tl().y+20),
-                    1,1.5,new Scalar(0,0,255,150),2);
+//            Imgproc.putText(mat_image,emotion_s+" ("+emotionValue+")",
+//                    new Point((int)faceArray[i].tl().x+10,(int)faceArray[i].tl().y+20),
+//                    1,1.5,new Scalar(0,0,255,150),2);
+//            //      use to scale text      color     R G  B  alpha    thickness
+
+            Imgproc.putText(mat_image,emotion_s,
+                    new Point((int)faceArray[i].tl().x + 10,(int)faceArray[i].tl().y - 10),
+                    2,4,new Scalar(237,9,9,150),4);
             //      use to scale text      color     R G  B  alpha    thickness
         }
 
@@ -160,29 +165,18 @@ public class FacialExpressionRecognition {
         }
         return maxIndex;
     }
+// 0: Angry, 1: Disgust, 2: Fear, 3:Happy, 4: Sad, 5: Surprise, 6: Neutral
     public String getEmotion(float[][] emotion){
         String emotion_s = "";
         switch (argmax(emotion[0])) {
             case 0:
                 emotion_s = "Angry";
                 break;
-            case 1:
-                emotion_s = "Disgust";
-                break;
-            case 2:
-                emotion_s = "Fear";
-                break;
             case 3:
                 emotion_s = "Happy";
                 break;
             case 4:
                 emotion_s = "Sad";
-                break;
-            case 5:
-                emotion_s = "Surprise";
-                break;
-            case 6:
-                emotion_s = "Neutral";
                 break;
         }
         return emotion_s;

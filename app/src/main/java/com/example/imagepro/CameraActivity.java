@@ -75,6 +75,8 @@ public class CameraActivity extends Activity implements CameraBridgeViewBase.CvC
         mOpenCvCameraView = findViewById(R.id.frame_Surface);
         mOpenCvCameraView.setVisibility(SurfaceView.VISIBLE);
         mOpenCvCameraView.setCvCameraViewListener(this);
+// display fps in log
+        mOpenCvCameraView.enableFpsMeter();
 
         flip_camera = findViewById(R.id.flip_camera);
         parentFrameLayout = findViewById(R.id.parent_layout);
@@ -88,7 +90,7 @@ public class CameraActivity extends Activity implements CameraBridgeViewBase.CvC
         // this only happen one time when you start CameraActivity
         try {
             int INPUT_SIZE = 48;
-            String modelFileName = "kaggle_model.tflite";
+            String modelFileName = "model_v1.tflite";
             facialExpressionRecognition = new FacialExpressionRecognition(getAssets(),CameraActivity.this,
                     modelFileName, INPUT_SIZE);
         }
