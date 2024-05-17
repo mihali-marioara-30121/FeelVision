@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
+import android.speech.tts.TextToSpeech;
 import android.util.Log;
 
 import org.opencv.android.Utils;
@@ -24,19 +25,24 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
+import java.util.Locale;
 
 public class FacialExpressionRecognition {
     private final Interpreter interpreter;
     private final int INPUT_SIZE;
+    private TextToSpeech textToSpeech;
     private CascadeClassifier cascadeClassifier; // used for face detection
+    private Context classContext;
+    private String lastEmotion = "";
 
     public FacialExpressionRecognition(AssetManager assetManager, Context context, String modelPath, int inputSize) throws IOException {
         INPUT_SIZE = inputSize;
+        classContext = context;
+        initializeTextToSpeech();
         GpuDelegate gpuDelegate = new GpuDelegate();
 
         Interpreter.Options options = new Interpreter.Options();
@@ -105,7 +111,10 @@ public class FacialExpressionRecognition {
 
         // now convert it to array
         Rect[] faceArray = faces.toArray(); // Array of rectangles
-        // loop through each face
+
+        if (faceArray.length == 0) {
+            alertUserToFindFace();
+        }
         for (int i=0; i<faceArray.length; i++){
             // if you want to draw rectangle around face
             //                input/output starting point ending point        color   R  G  B  alpha    thickness
@@ -131,20 +140,9 @@ public class FacialExpressionRecognition {
             float[][] emotion = new float[1][numClasses];
             //now predict with bytebuffer as an input and emotion as an output
             interpreter.run(byteBuffer, emotion);
-            // if emotion is recognize print value of it
 
-            // define float value of emotion
-            float emotionValue = (float) Array.get(Array.get(emotion,0),0);
-            Log.d("facial_expression","Output:  "+ emotionValue);
-            // create a function that return text emotion
-            //String emotion_s = findEmotionByValue(emotionValue);
             String emotion_s = getEmotion(emotion);
-            // now put text on original frame(mat_image)
-            //             input/output    text: Angry (2.934234)
-//            Imgproc.putText(mat_image,emotion_s+" ("+emotionValue+")",
-//                    new Point((int)faceArray[i].tl().x+10,(int)faceArray[i].tl().y+20),
-//                    1,1.5,new Scalar(0,0,255,150),2);
-//            //      use to scale text      color     R G  B  alpha    thickness
+            speak(emotion_s);
 
             Imgproc.putText(mat_image,emotion_s,
                     new Point((int)faceArray[i].tl().x + 10,(int)faceArray[i].tl().y - 10),
@@ -156,6 +154,13 @@ public class FacialExpressionRecognition {
         Core.flip(mat_image.t(), mat_image,0);
         return mat_image;
     }
+
+    private void alertUserToFindFace() {
+        if (!textToSpeech.isSpeaking()) {
+            textToSpeech.speak("No face detected, please point the camera towards a person", TextToSpeech.QUEUE_FLUSH, null, null);
+        }
+    }
+
     private int argmax(float[] array) {
         int maxIndex = 0;
         for (int i = 1; i < array.length; i++) {
@@ -217,5 +222,19 @@ public class FacialExpressionRecognition {
         long startOffset = assetFileDescriptor.getStartOffset();
         long declaredLength = assetFileDescriptor.getDeclaredLength();
         return  fileChannel.map(FileChannel.MapMode.READ_ONLY,startOffset,declaredLength);
+    }
+
+    private void initializeTextToSpeech() {
+        textToSpeech = new TextToSpeech(classContext, i -> {
+            textToSpeech.setLanguage(Locale.ENGLISH);
+        });
+    }
+    private void speak(String message) {
+        if (message.isEmpty())
+            return;
+        if (!textToSpeech.isSpeaking() && !lastEmotion.equals(message)) {
+            textToSpeech.speak(message, TextToSpeech.QUEUE_FLUSH, null, null);
+            lastEmotion = message;
+        }
     }
 }

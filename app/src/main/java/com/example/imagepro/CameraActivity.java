@@ -102,7 +102,7 @@ public class CameraActivity extends Activity implements CameraBridgeViewBase.CvC
             textToSpeech.setLanguage(Locale.ENGLISH);
                 if(mCameraId == 0){
                     speak("Back camera is open!");
-                } else{
+                } else {
                     speak("Frontal camera is open!");
                 }
         });
