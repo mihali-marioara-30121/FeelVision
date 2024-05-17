@@ -80,12 +80,7 @@ public class CameraActivity extends Activity implements CameraBridgeViewBase.CvC
 
         flip_camera = findViewById(R.id.flip_camera);
         parentFrameLayout = findViewById(R.id.parent_layout);
-        flip_camera.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                swapCamera();
-            }
-        });
+        flip_camera.setOnClickListener(view -> swapCamera());
         // this will load cascade classifier and model
         // this only happen one time when you start CameraActivity
         try {
@@ -103,17 +98,13 @@ public class CameraActivity extends Activity implements CameraBridgeViewBase.CvC
         setupSpeechRecognitionOnTouchListener();
     }
     private void initializeTextToSpeech() {
-        textToSpeech = new TextToSpeech(this, new TextToSpeech.OnInitListener(){
-
-            @Override
-            public void onInit(int i) {
-                textToSpeech.setLanguage(Locale.ENGLISH);
-                    if(mCameraId == 0){
-                        speak("Back camera is open!");
-                    } else{
-                        speak("Frontal camera is open!");
-                    };
-            }
+        textToSpeech = new TextToSpeech(this, i -> {
+            textToSpeech.setLanguage(Locale.ENGLISH);
+                if(mCameraId == 0){
+                    speak("Back camera is open!");
+                } else{
+                    speak("Frontal camera is open!");
+                }
         });
     }
     private void initializeSpeechRecognizer() {
@@ -163,7 +154,7 @@ public class CameraActivity extends Activity implements CameraBridgeViewBase.CvC
                 speak("Back camera is open!");
             } else{
                 speak("Frontal camera is open!");
-            };
+            }
         }
         if(command.contains("back")){
             openMainActivity();
