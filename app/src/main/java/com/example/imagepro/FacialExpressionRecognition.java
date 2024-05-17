@@ -38,6 +38,7 @@ public class FacialExpressionRecognition {
     private CascadeClassifier cascadeClassifier; // used for face detection
     private Context classContext;
     private String lastEmotion = "";
+    private long lastTimestamp = System.currentTimeMillis();
 
     public FacialExpressionRecognition(AssetManager assetManager, Context context, String modelPath, int inputSize) throws IOException {
         INPUT_SIZE = inputSize;
@@ -115,7 +116,9 @@ public class FacialExpressionRecognition {
         if (faceArray.length == 0) {
             alertUserToFindFace();
         }
+
         for (int i=0; i<faceArray.length; i++){
+            lastTimestamp = System.currentTimeMillis();
             // if you want to draw rectangle around face
             //                input/output starting point ending point        color   R  G  B  alpha    thickness
             Imgproc.rectangle(mat_image,faceArray[i].tl(),faceArray[i].br(),new Scalar(0,255,0,255),4);
@@ -156,7 +159,14 @@ public class FacialExpressionRecognition {
     }
 
     private void alertUserToFindFace() {
+        long currentTimestamp = System.currentTimeMillis();
+        if (currentTimestamp - lastTimestamp < 5000) {
+            return;
+        }
+
         if (!textToSpeech.isSpeaking()) {
+            lastTimestamp = System.currentTimeMillis();
+            lastEmotion = "undetected face";
             textToSpeech.speak("No face detected, please point the camera towards a person", TextToSpeech.QUEUE_FLUSH, null, null);
         }
     }
