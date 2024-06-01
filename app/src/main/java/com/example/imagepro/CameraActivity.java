@@ -38,7 +38,6 @@ public class CameraActivity extends Activity implements CameraBridgeViewBase.CvC
     private static final String TAG = "MainActivity";
     private Mat mRgba;
     private CameraBridgeViewBase mOpenCvCameraView;
-    private ImageView flip_camera;
     //define integer that represent camera 0-back 1-front
     private int mCameraId = 0; //initially the back camera is open
     private FacialExpressionRecognition facialExpressionRecognition;
@@ -78,9 +77,7 @@ public class CameraActivity extends Activity implements CameraBridgeViewBase.CvC
 // display fps in log
         mOpenCvCameraView.enableFpsMeter();
 
-        flip_camera = findViewById(R.id.flip_camera);
         parentFrameLayout = findViewById(R.id.parent_layout);
-        flip_camera.setOnClickListener(view -> swapCamera());
         // this will load cascade classifier and model
         // this only happen one time when you start CameraActivity
         try {

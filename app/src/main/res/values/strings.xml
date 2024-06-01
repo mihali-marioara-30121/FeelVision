@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">FeelVision</string>
+    <string name="say_start_to_open_camera">Say <b> \'Start\' </b>  to open camera</string>
+    <string name="press_anywere_to_speak">Press anywere to speak</string>
 </resources>

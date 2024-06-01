@@ -1,6 +1,7 @@
 package com.example.imagepro;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
@@ -8,7 +9,6 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.os.Handler;
 import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
@@ -16,8 +16,7 @@ import android.speech.tts.TextToSpeech;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.Button;
-import android.widget.LinearLayout;
+
 import android.widget.Toast;
 
 import org.opencv.android.OpenCVLoader;
@@ -31,7 +30,7 @@ public class MainActivity extends AppCompatActivity {
     private TextToSpeech textToSpeech;
     private SpeechRecognizer speechRecognizer;
 
-    private LinearLayout parentLinearLayout;
+    private ConstraintLayout constraintLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,11 +44,9 @@ public class MainActivity extends AppCompatActivity {
             (Toast.makeText(this, "OpenCV initialization failed!", Toast.LENGTH_LONG)).show();
             return;
         }
-        parentLinearLayout = findViewById(R.id.parent_layout);
-        Button camera_button = findViewById(R.id.camera_button);
+        constraintLayout = findViewById(R.id.parent_layout);
 
         checkAudioPermissions();
-        camera_button.setOnClickListener(v -> openCameraActivity());
         initializeTextToSpeech();
         initializeSpeechRecognizer();
         setupSpeechRecognitionOnTouchListener();
@@ -136,7 +133,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void setupSpeechRecognitionOnTouchListener() {
-        parentLinearLayout.setOnTouchListener(new View.OnTouchListener() {
+        constraintLayout.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 switch (event.getAction()){
