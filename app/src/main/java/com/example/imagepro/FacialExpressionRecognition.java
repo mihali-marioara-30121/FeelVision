@@ -160,7 +160,7 @@ public class FacialExpressionRecognition {
 
     private void alertUserToFindFace() {
         long currentTimestamp = System.currentTimeMillis();
-        if (currentTimestamp - lastTimestamp < 5000) {
+        if (currentTimestamp - lastTimestamp < 10000) {
             return;
         }
 

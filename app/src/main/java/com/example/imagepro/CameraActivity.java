@@ -74,8 +74,6 @@ public class CameraActivity extends Activity implements CameraBridgeViewBase.CvC
         mOpenCvCameraView = findViewById(R.id.frame_Surface);
         mOpenCvCameraView.setVisibility(SurfaceView.VISIBLE);
         mOpenCvCameraView.setCvCameraViewListener(this);
-// display fps in log
-        mOpenCvCameraView.enableFpsMeter();
 
         parentFrameLayout = findViewById(R.id.parent_layout);
         // this will load cascade classifier and model
@@ -155,7 +153,6 @@ public class CameraActivity extends Activity implements CameraBridgeViewBase.CvC
         }
         if(command.contains("back")){
             openMainActivity();
-            speak("MainActivity is open!");
         }
         // Display the recognized command in a Toast message
         Toast.makeText(CameraActivity.this, "Recognized Command: " + command, Toast.LENGTH_SHORT).show();

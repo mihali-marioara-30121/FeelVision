@@ -73,7 +73,7 @@ public class MainActivity extends AppCompatActivity {
                     finish();
                 } else{
                     textToSpeech.setLanguage(Locale.ENGLISH);
-                    speak("Hello! I am ready. Say START to open Camera!");
+                    speak("Hello! Tap the screen and say 'Start' to open camera or 'Instructions to hear all the possible commands!");
                 }
             }
         });
@@ -85,6 +85,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void startListening() {
+        textToSpeech.stop();
         Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
                 RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
@@ -122,7 +123,20 @@ public class MainActivity extends AppCompatActivity {
         command = command.toLowerCase();
         if (command.contains("start")) {
             openCameraActivity();
-            //speak("CameraActivity is open!");
+        }
+
+        if (command.contains("back")) {
+            speak("You are already in the main page. Say 'Start' to open camera");
+        }
+
+        if (command.contains("flip")) {
+            speak("You are in the main page now. Say 'Start' to open camera");
+        }
+
+        if (command.contains("instruction")) {
+            speak("Say 'start' to open camera. " +
+                    "Say 'flip' to switch between back and frontal camera. " +
+                            "Say 'back' to return to the main page");
         }
         // Display the recognized command in a Toast message
         Toast.makeText(MainActivity.this, "Recognized Command: " + command, Toast.LENGTH_SHORT).show();
