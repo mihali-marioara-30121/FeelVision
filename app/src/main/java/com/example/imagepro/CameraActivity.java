@@ -80,7 +80,7 @@ public class CameraActivity extends Activity implements CameraBridgeViewBase.CvC
         // this only happen one time when you start CameraActivity
         try {
             int INPUT_SIZE = 48;
-            String modelFileName = "model_v1.tflite";
+            String modelFileName = "model_v4.tflite";
             facialExpressionRecognition = new FacialExpressionRecognition(getAssets(),CameraActivity.this,
                     modelFileName, INPUT_SIZE);
         }

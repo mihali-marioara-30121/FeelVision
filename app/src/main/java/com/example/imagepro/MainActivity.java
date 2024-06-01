@@ -134,9 +134,14 @@ public class MainActivity extends AppCompatActivity {
         }
 
         if (command.contains("instruction")) {
-            speak("Say 'start' to open camera. " +
+            speak("Hello! Welcome to FeelVision! " + "Keep your finger on the screen while saying a command then release it to execute! " + "Say 'start' to open camera. " +
                     "Say 'flip' to switch between back and frontal camera. " +
-                            "Say 'back' to return to the main page");
+                    "Say 'back' to return to the main page. " + "Say 'repeat' to hear the commands again");
+        }
+            if (command.contains("repeat")) {
+                speak("Say 'start' to open camera. " +
+                        "Say 'flip' to switch between back and frontal camera. " +
+                        "Say 'back' to return to the main page. ");
         }
         // Display the recognized command in a Toast message
         Toast.makeText(MainActivity.this, "Recognized Command: " + command, Toast.LENGTH_SHORT).show();
