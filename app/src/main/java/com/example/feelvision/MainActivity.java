@@ -1,4 +1,4 @@
-package com.example.imagepro;
+package com.example.feelvision;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
@@ -29,7 +29,6 @@ public class MainActivity extends AppCompatActivity {
 
     private TextToSpeech textToSpeech;
     private SpeechRecognizer speechRecognizer;
-
     private ConstraintLayout constraintLayout;
 
     @Override
@@ -41,7 +40,7 @@ public class MainActivity extends AppCompatActivity {
             Log.i("LOADED", "OpenCV loaded successfully");
         } else {
             Log.e("LOADED", "OpenCV initialization failed!");
-            (Toast.makeText(this, "OpenCV initialization failed!", Toast.LENGTH_LONG)).show();
+            Toast.makeText(this, "OpenCV initialization failed!", Toast.LENGTH_LONG).show();
             return;
         }
         constraintLayout = findViewById(R.id.parent_layout);
@@ -54,10 +53,8 @@ public class MainActivity extends AppCompatActivity {
 
     private void checkAudioPermissions() {
         int MY_PERMISSIONS_REQUEST_RECORD_AUDIO = 0;
-        // Check if the record audio permission is not granted
         if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.RECORD_AUDIO)
                 == PackageManager.PERMISSION_DENIED){
-            // Request the record audio permission
             ActivityCompat.requestPermissions(MainActivity.this, new String[] {Manifest.permission.RECORD_AUDIO}, MY_PERMISSIONS_REQUEST_RECORD_AUDIO);
         }
     }
@@ -67,11 +64,11 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onInit(int i) {
-                if(textToSpeech.getEngines().size() == 0){ // no engine are installed
+                if(textToSpeech.getEngines().size() == 0) {
                     Toast.makeText(MainActivity.this, "There is no TextToSpeech engine on your device!",
                             Toast.LENGTH_LONG).show();
                     finish();
-                } else{
+                } else {
                     textToSpeech.setLanguage(Locale.ENGLISH);
                     speak("Hello! Tap the screen and say 'Start' to open camera or 'Instructions to hear all the possible commands!");
                 }
@@ -100,7 +97,6 @@ public class MainActivity extends AppCompatActivity {
             processResult( matches.get(0));
         }
 
-        // Implement other required methods with empty bodies
         @Override
         public void onReadyForSpeech(Bundle params) {}
         @Override
@@ -136,14 +132,9 @@ public class MainActivity extends AppCompatActivity {
         if (command.contains("instruction")) {
             speak("Hello! Welcome to FeelVision! " + "Keep your finger on the screen while saying a command then release it to execute! " + "Say 'start' to open camera. " +
                     "Say 'flip' to switch between back and frontal camera. " +
-                    "Say 'back' to return to the main page. " + "Say 'repeat' to hear the commands again");
+                    "Say 'back' to return to the main page. ");
         }
-            if (command.contains("repeat")) {
-                speak("Say 'start' to open camera. " +
-                        "Say 'flip' to switch between back and frontal camera. " +
-                        "Say 'back' to return to the main page. ");
-        }
-        // Display the recognized command in a Toast message
+
         Toast.makeText(MainActivity.this, "Recognized Command: " + command, Toast.LENGTH_SHORT).show();
     }
 

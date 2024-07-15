@@ -1,4 +1,4 @@
-package com.example.imagepro;
+package com.example.feelvision;
 
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -19,7 +19,6 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
-import android.widget.ImageView;
 import android.widget.Toast;
 
 import org.opencv.android.BaseLoaderCallback;
@@ -38,8 +37,7 @@ public class CameraActivity extends Activity implements CameraBridgeViewBase.CvC
     private static final String TAG = "MainActivity";
     private Mat mRgba;
     private CameraBridgeViewBase mOpenCvCameraView;
-    //define integer that represent camera 0-back 1-front
-    private int mCameraId = 0; //initially the back camera is open
+    private int mCameraId = 0;
     private FacialExpressionRecognition facialExpressionRecognition;
     private FrameLayout parentFrameLayout;
     private TextToSpeech textToSpeech;
@@ -63,21 +61,18 @@ public class CameraActivity extends Activity implements CameraBridgeViewBase.CvC
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         int MY_PERMISSIONS_REQUEST_CAMERA = 0;
-        // if camera permission is not given it will ask for it on device
+
         if (ContextCompat.checkSelfPermission(CameraActivity.this, Manifest.permission.CAMERA)
                 == PackageManager.PERMISSION_DENIED){
             ActivityCompat.requestPermissions(CameraActivity.this, new String[] {Manifest.permission.CAMERA}, MY_PERMISSIONS_REQUEST_CAMERA);
         }
 
         setContentView(R.layout.activity_camera);
-
         mOpenCvCameraView = findViewById(R.id.frame_Surface);
         mOpenCvCameraView.setVisibility(SurfaceView.VISIBLE);
         mOpenCvCameraView.setCvCameraViewListener(this);
-
         parentFrameLayout = findViewById(R.id.parent_layout);
-        // this will load cascade classifier and model
-        // this only happen one time when you start CameraActivity
+
         try {
             int INPUT_SIZE = 48;
             String modelFileName = "model_v4.tflite";
@@ -122,7 +117,6 @@ public class CameraActivity extends Activity implements CameraBridgeViewBase.CvC
             processResult( matches.get(0));
         }
 
-        // Implement other required methods with empty bodies
         @Override
         public void onReadyForSpeech(Bundle params) {}
         @Override
@@ -147,14 +141,19 @@ public class CameraActivity extends Activity implements CameraBridgeViewBase.CvC
             swapCamera();
             if(mCameraId == 0){
                 speak("Back camera is open!");
-            } else{
+            } else {
                 speak("Frontal camera is open!");
             }
         }
         if(command.contains("back")){
             openMainActivity();
         }
-        // Display the recognized command in a Toast message
+        if (command.contains("instruction")) {
+            speak("Go back to main page to hear instructions!");
+        }
+        if (command.contains("start")) {
+            speak("Camera is already opened!");
+        }
         Toast.makeText(CameraActivity.this, "Recognized Command: " + command, Toast.LENGTH_SHORT).show();
     }
 
@@ -189,13 +188,11 @@ public class CameraActivity extends Activity implements CameraBridgeViewBase.CvC
     @Override
     protected void onResume() {
         super.onResume();
-        if (OpenCVLoader.initDebug()){
-            //if loading succeeded
+        if (OpenCVLoader.initDebug()) {
             Log.d(TAG,"Opencv initialization is done");
             mLoaderCallback.onManagerConnected(LoaderCallbackInterface.SUCCESS);
         }
-        else{
-            //if loading failed
+        else {
             Log.d(TAG,"Opencv is not loaded. try again");
             OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_3_4_0,this, mLoaderCallback);
         }
@@ -227,17 +224,12 @@ public class CameraActivity extends Activity implements CameraBridgeViewBase.CvC
         mRgba.release();
     }
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame){
-
         mRgba = inputFrame.rgba();
 
         if(mCameraId == 1){
             Core.flip(mRgba, mRgba, 1); //rotate by 180
         }
-
         mRgba = facialExpressionRecognition.recognizeImage(mRgba);
-        //front camera is rotated by 180
-        // when mCameraId = 1 (front)
-
 
         return mRgba;
     }
