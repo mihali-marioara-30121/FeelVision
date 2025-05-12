@@ -53,7 +53,7 @@ The CNN model is trained to recognize the following 7 emotions:
 - Neutral
 - Fear
 - Disgust
-- Best results for: happy, neutral, surprised
+- Best results for: happines, neutral, surprise
 
 ## 🧪 Dataset
 
